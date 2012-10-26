@@ -1,12 +1,12 @@
-templatehelperz
-===============
+#Drupal - Module: templatehelperz
 
-Drupal - Module: templatehelperz
+##Usage:
 
-Usage:
-
+<pre>
 $template_var = field2var( $vars_temp, $node );
+</pre>
 
+<pre>
 $vars_temp = array(
     'type' => '',             //image, images, term, text, list, ingrediente, vimeo_embed, vimeo_url
     'field' => '',            //name of the field (field_image, field_tags, ...)
@@ -46,4 +46,5 @@ $vars_temp = array(
     'properties' => array(
       'name' => 'value'       //adds custom properties to the item
     )
-  );  
+);
+</pre>
