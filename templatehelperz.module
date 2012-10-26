@@ -1,0 +1,491 @@
+<?php
+  /*******************************************************************************************************************************
+  $vars_temp = array(
+    'type' => '',             //image, images, term, text, list, ingrediente, vimeo_embed, vimeo_url
+    'field' => '',            //name of the field (field_image, field_tags, ...)
+    'style' => array(
+      'preset' => '',         //name of the image style (200x100, 366x133, ...)
+      'width' => '',          //width
+      'height' => '',         //height
+    ),
+    'class' => '',            //class for each element (default: none)
+    'no_container' => false,  //the container that holds all the elements (default: tag -> ul, class -> galerie clearfix)
+    'container' => array(
+      'tag' => '',            //DOM tag for the container (default: ul)
+      'class' => '',          //class for the container ( default: galerie clearfix)
+    ),
+    'no_wrapper' => false,    //the wrapper for each element (default: tag -> li, class -> item)
+    'wrapper' => array(
+      'tag' => '',            //DOM tag for the wrapper of each element (default: li)
+      'class' => '',          //class for the wrapper of each element (default: item)
+    ),
+    'og' => false,            //set the og:image meta tag in the head
+    'link_to' => array(
+      'href' => '',           //link tag for each element to link to a specified url (include http://)
+      'rel' => '',            //rel attribute for the link tag
+      'target' => '',         //target attribute for the link tag
+      'style' => '',          //link tag for each element to link to a specified image preset style (200x100, 366x133, full, ...)
+    ),
+    'separator' => array(
+      'value' => '',          //separator char for terms (default: none)
+      'tag' => '',            //separator wrapper DOM tag (default: li)
+      'class' => '',          //separator wrapper class (default: separator, class item is added each time)
+    ),
+    'label' => array(
+      'value' => '',          //adds an element at the begining of the list with the set value (default: none)
+      'tag' => '',
+      'class' => ''
+    ),
+    'properties' => array(
+      'name' => 'value'       //adds custom properties to the item
+    )
+  );  
+  *******************************************************************************************************************************/
+  
+  
+  function field2var( $vars, $node ){
+
+    if( !empty( $vars ) ) {
+      $field = $node->$vars['field'];
+
+      if( empty( $vars['style'] ) ){ 
+        $style = ''; 
+      } elseif( !empty( $vars['style']['preset'] ) ){ 
+        $style = style_porperty( $vars['style']['preset'] ); 
+      } else { 
+        $style = $vars['style']; 
+      }
+      if( empty( $vars['class'] ) ){ $vars['class'] = ''; }
+      if( empty( $vars['container']['tag'] ) ) { $vars['container']['tag'] = 'ul'; }
+      if( empty( $vars['container']['class'] ) ) { $vars['container']['class'] = 'galerie clearfix'; }
+      if( empty( $vars['wrapper']['tag'] ) ) { $vars['wrapper']['tag'] = 'li'; }
+      if( empty( $vars['wrapper']['class'] ) ) { $vars['wrapper']['class'] = 'item'; }
+      if( empty( $vars['separator']['tag'] ) ) { $vars['separator']['tag'] = 'li'; }
+      if( empty( $vars['separator']['class'] ) ) { $vars['separator']['class'] = 'separator'; }
+      if( empty( $vars['separator']['value'] ) ) { $vars['separator']['value'] = ''; }
+      if( empty( $vars['og'] ) ) { $vars['og'] = false; }
+
+      if( !empty( $vars['label'] ) ) {
+        if( empty( $vars['label']['tag'] ) ) { $vars['label']['tag'] = 'li'; }
+        if( empty( $vars['label']['class'] ) ) { $vars['label']['class'] = 'label'; }
+        $label = true;
+      } else {
+        $label = false;
+      }
+      
+      if( !empty( $vars['link_to'] ) ) {
+        if( !empty( $vars['link_to']['href'] ) ) { $link_to_href = $vars['link_to']['href']; } else { $link_to_href = ''; }
+        if( !empty( $vars['link_to']['style'] ) ) { $link_to_style = $vars['link_to']['style']; } else { $link_to_style = ''; }
+        if( empty( $vars['link_to']['target'] ) ) { $vars['link_to']['target'] = ''; }
+        if( empty( $vars['link_to']['rel'] ) ) { $vars['link_to']['rel'] = ''; }
+        $link_to = true;
+      } else {
+        $link_to = false;
+      }
+      
+      !empty( $vars['no_container'] ) && $vars['no_container'] ? $no_container = true : $no_container = false;
+      !empty( $vars['no_wrapper'] ) && $vars['no_wrapper'] ? $no_wrapper = true : $no_wrapper = false;
+
+      !empty( $vars['properties'] ) ? $properties = true : $properties = false;
+      
+      switch( $vars['type'] ) {
+        case 'image': {
+          if( !empty( $field ) ) {
+            
+            $variables = array(
+              'style_name' => $vars['style']['preset'],
+              'path' => $field['und'][0]['uri'],
+              'width' => $style['width'],
+              'height' => $style['height'],
+              'alt' => $field['und'][0]['alt'],
+              'title' => $field['und'][0]['title'],
+              'attributes' => array(
+                'class' => $vars['class'],
+              ),
+            );
+
+            if( $properties ) {
+              foreach ($vars['properties'] as $name => $value ) {
+                $variables['attributes'][$name] = $value;
+              }
+            }
+            
+            $image = theme_image_style( $variables );
+            
+            if( $link_to ) {
+              $url = $link_to_style != '' ? image_style_url( $link_to_style, $img["uri"]) : $link_to_href;
+              $image = "<a href='$url' target='{$vars['link_to']['target']}' rel='{$vars['link_to']['rel']}'>$image</a>";
+            }
+            
+            $vars['og'] ? set_og_img( image_style_url( $vars['style']['preset'], $field['und'][0]['uri'] ) ) : false;
+            
+            return $image;
+          } else {
+            return '';
+          }
+          break;
+        } // case image
+        
+        case 'images': {
+          if( !empty( $field ) ) {
+            !$no_container ? $galerie = "<{$vars['container']['tag']} class='{$vars['container']['class']}'>" : $galerie = '';
+            $i = 1;
+            
+            foreach( $field['und'] as $img ) {
+              !isset( $img['alt'] ) || ( isset( $img['alt'] ) && !empty( $img['alt'] ) ) ? $img['alt'] = $node->title : false;
+              !isset( $img['title'] ) ? $img['title'] = '' : false;
+              $variables = array(
+                'style_name' => $vars['style']['preset'],
+                'path' => $img['uri'],
+                'width' => $style['width'],
+                'height' => $style['height'],
+                'alt' => $img['alt'],
+                'title' => $img['title'],
+                'attributes' => array(
+                  'class' => $vars['class']
+                ),
+              );
+
+              if( $properties ) {
+                foreach ($vars['properties'] as $name => $value ) {
+                  $variables['attributes'][$name] = $value;
+                }
+              }
+                
+              $gal_img = theme_image_style( $variables );
+              
+              $odd_even = $i%2 ? 'odd' : 'even';
+              
+              $pos = set_pos( $i, $field );
+              
+              if( $link_to ) {
+                $url = $link_to_style != '' ? image_style_url( $link_to_style, $img["uri"]) : $link_to_href;
+                
+                $galerie .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} image $pos $odd_even'><a href='$url' target='{$vars['link_to']['target']}' rel='{$vars['link_to']['rel']}'>$gal_img</a></{$vars['wrapper']['tag']}>";
+              } else {
+                $galerie .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} image $pos $odd_even'>$gal_img</{$vars['wrapper']['tag']}>";
+              }
+              
+              $i++;
+            }
+            
+            !$no_container ? $galerie .= "</{$vars['container']['tag']}>" : false;
+            
+            $vars['og'] ? set_og_img( image_style_url( $vars['style']['preset'], $field['und'][0]['uri'] ) ) : false;
+            
+            return $galerie;
+          } else {
+            return '';
+          }
+          break;
+        } // case images
+        
+        case 'list': {
+          if( !empty( $field ) ) {
+            !$no_container ? $lista = "<{$vars['container']['tag']} class='{$vars['container']['class']}'>" : $lista = '';
+            $i = 1;
+            
+            foreach( $field['und'] as $item ) {
+              $odd_even = $i%2 ? 'odd' : 'even';
+              
+              $pos = set_pos( $i, $field );
+              
+              if( $link_to ) {
+                $url = $link_to_href;
+                
+                $lista .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} $pos $odd_even'><a href='$url' target='{$vars['link_to']['target']}' rel='{$vars['link_to']['rel']}'>{$item->value}</a></{$vars['wrapper']['tag']}>";
+              } else {
+                $lista .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} $pos $odd_even'>{$item->value}</{$vars['wrapper']['tag']}>";
+              }
+              
+              $i++;
+            }
+            
+            !$no_container ? $lista .= "</{$vars['container']['tag']}>" : false;
+            
+            return $lista;
+          } else {
+            return '';
+          }
+          break;
+        } // case list
+
+        case 'ingrediente': {
+          if( !empty( $field ) ) {
+
+            $props = "";
+            if( $properties ) {
+              foreach ($vars['properties'] as $name => $value ) {
+                $props .= " $name='$value'";
+              }
+            }
+
+            !$no_container ? $lista = "<{$vars['container']['tag']} class='{$vars['container']['class']}'>" : $lista = '';
+            $i = 1;
+            $repl_cant = array(
+              '1/2' => '½',
+              '3/4' => '¾',
+              '1/4' => '¼'
+            );
+            
+            foreach( $field['und'] as $item ) {
+              $odd_even = $i%2 ? 'odd' : 'even';
+              
+              $pos = set_pos( $i, $field );
+
+              $term = taxonomy_get_term_by_name( $item['nume'], 'ingrediente' );
+              if( $term ) {
+                foreach( $term as $t ){
+                  $tid = $t->tid;
+                  $vid = $t->vid;
+                } 
+              } else {
+                $tid = $vid = '';
+              }
+              
+              $item['label'] ? $is_label = 'label' : $is_label = '';
+
+              $lista .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} ingredient $is_label clearfix $pos $odd_even'$props><{$vars['container']['tag']}>";
+
+              foreach ( $repl_cant as $key => $value ) {
+                $item['cantitate'] = str_replace( " $key ", $value, $item['cantitate'] );
+                $item['cantitate'] = str_replace( "$key ", $value, $item['cantitate'] );
+                $item['cantitate'] = str_replace( $key, $value, $item['cantitate'] );
+              }
+
+              if( $is_label == 'label' ) {
+                !empty( $item['nume'] ) ? $lista .= "<{$vars['wrapper']['tag']} class='prop label'>{$item['nume']} </{$vars['wrapper']['tag']}>" : false;
+              } else {
+                !empty( $item['cantitate'] ) ? $lista .= "<{$vars['wrapper']['tag']} class='prop cantitate'>{$item['cantitate']} </{$vars['wrapper']['tag']}>" : false;
+                !empty( $item['tip'] ) ? $lista .= "<{$vars['wrapper']['tag']} class='prop tip'>{$item['tip']} </{$vars['wrapper']['tag']}>" : false;
+                !empty( $item['nume'] ) ? $lista .= "<{$vars['wrapper']['tag']} class='prop nume' data-vid='$vid' data-tid='$tid'>{$item['nume']} </{$vars['wrapper']['tag']}>" : false;
+                !empty( $item['detalii'] ) ? $lista .= "<{$vars['wrapper']['tag']} class='prop detalii'>{$item['detalii']}</{$vars['wrapper']['tag']}>" : false;
+              }
+
+              $lista .= "</{$vars['container']['tag']}></{$vars['wrapper']['tag']}>";
+              
+              $i++;
+            }
+            
+            !$no_container ? $lista .= "</{$vars['container']['tag']}>" : false;
+            
+            return $lista;
+          } else {
+            return '';
+          }
+          break;
+        } // case ingrediente
+
+        case 'vimeo_embed': {
+          if( !empty( $field ) ) {
+            !$no_container ? $galeie = "<{$vars['container']['tag']} class='{$vars['container']['class']}'>" : $galerie = '';
+            $i = 1;
+            
+            foreach( $field['und'] as $video ) {
+              preg_match_all('/(src)=("[^"]*")/i', $video['value'], $id[$i]);
+              $imgid = str_replace('http://player.vimeo.com/video/', '', $id[$i][2]);
+              $imgid = str_replace('"', '', $imgid[0]);
+                            
+              $hash = unserialize( file_get_contents( "http://vimeo.com/api/v2/video/$imgid.php" ) );
+                          
+              $odd_even = $i%2 ? 'odd' : 'even';
+              
+              $pos = set_pos( $i, $field );
+              
+              $galerie .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} video $pos $odd_even'><img src='{$hash[0]['thumbnail_medium']}' width={$style['width']} height={$style['height']} alt /></{$vars['wrapper']['tag']}>";
+
+              $i++;
+            }
+            
+            !$no_container ? $galerie .= "</{$vars['container']['tag']}>" : false;
+                        
+            return $galerie;
+          } else {
+            return '';
+          }
+          break;
+        } // case vimeo embed
+        
+        case 'vimeo_url': {
+          
+          if( !empty( $field ) ) {
+            !$no_container ? $galerie = "<{$vars['container']['tag']} class='{$vars['container']['class']}'>" : $galerie = '';
+            $i = 1;
+            
+            foreach( $field['und'] as $video ) {
+              
+              $imgid = str_replace('http://vimeo.com/', '', $video['value']);
+              $hash = unserialize( file_get_contents( "http://vimeo.com/api/v2/video/$imgid.php" ) );
+                          
+              $odd_even = $i%2 ? 'odd' : 'even';
+              
+              $pos = set_pos( $i, $field );
+              
+              $galerie .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} video $pos $odd_even'><img src='{$hash[0]['thumbnail_medium']}' width={$style['width']} height={$style['height']} alt /></{$vars['wrapper']['tag']}>";
+              
+              $i++;
+            }
+            
+            !$no_container ? $galerie .= "</{$vars['container']['tag']}>" : false;
+            
+            return $galerie;
+          } else {
+            return '';
+          }
+          break;
+        } // case vimeo url
+        
+        case 'term': {
+          if( !empty( $field ) && !empty( $field['und'][0]['taxonomy_term']->name ) ) {
+            global $base_url;
+            $props = "";
+            if( $properties ) {
+              foreach ($vars['properties'] as $name => $value ) {
+                $props .= " $name='$value'";
+              }
+            }
+
+            !$no_container ? $terms = "<{$vars['container']['tag']} class='{$vars['container']['class']}'>" : $terms = '';
+            $i = 1; // counter for terms
+            $j = 0; // counter for separators
+            $p = 0; // main counter
+
+            if( $label ){
+              $p = $i + $j;
+              $odd_even = $p%2 ? 'odd' : 'even';
+
+              $pos = set_pos( $i, $field, $label );
+
+              if( $no_wrapper ) {
+                $terms .= "{$vars['label']['value']}";
+              } else {
+                $terms .= "<{$vars['label']['tag']} class='{$vars['wrapper']['class']} {$vars['label']['class']} $pos $odd_even'>{$vars['label']['value']}</{$vars['label']['tag']}>";
+              }
+
+              $i++;
+            }
+            
+            foreach( $field['und'] as $term ) {
+              $p = $i + $j;
+              $odd_even = $p%2 ? 'odd' : 'even';
+              
+              $pos = set_pos( $i, $field, $label );
+              
+              if( empty( $term['taxonomy_term']->name ) ){
+                $term['taxonomy_term']->name = '';
+              }
+
+              if( $link_to ) {
+                if( $link_to_href == '%self%' ) {
+                  $url = $base_url . '/taxonomy/term/' . $term['tid'];  
+                } else {
+                  $url = $link_to_href;
+                  $vars['link_to']['target'] = $vars['link_to']['target'] != '' ? $vars['link_to']['target'] : '_blank';
+                }
+                
+                if( $no_wrapper ) {
+                  $terms .= "<a href='$url' target='{$vars['link_to']['target']}' rel='{$vars['link_to']['rel']}'$props>{$term['taxonomy_term']->name}</a>";
+                } else {
+                  $terms .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} term $pos $odd_even'$props><a href='$url' target='{$vars['link_to']['target']}' rel='{$vars['link_to']['rel']}'>{$term['taxonomy_term']->name}</a></{$vars['wrapper']['tag']}>";
+                }
+              } else {
+                if( $no_wrapper ) {
+                  $terms .= "<span class='term'$props>{$term['taxonomy_term']->name}</span>";
+                } else {
+                  $terms .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} term $pos $odd_even'$props>{$term['taxonomy_term']->name}</{$vars['wrapper']['tag']}>";
+                }
+              }
+              
+              if( !empty( $vars['separator'] ) && ( $pos != 'last' && $pos != 'first last' ) ){
+                $j++;
+                $p = $i + $j;
+                $odd_even = $p%2 ? 'odd' : 'even';
+                
+                $terms .= "<{$vars['separator']['tag']} class='{$vars['wrapper']['class']} {$vars['separator']['class']} $odd_even'>{$vars['separator']['value']}</{$vars['separator']['tag']}>";
+              }
+              
+              $i++;
+            }
+            
+            !$no_container ? $terms .= "</{$vars['container']['tag']}>" : false;
+            return $terms;
+          } else {
+            return '';
+          }
+          break;
+        } // case term
+
+        case 'text': {
+          if( !empty( $field ) ){
+
+            $text = $field['und']['0']['value'];
+
+            return $text;
+          } else {
+            return '';
+          }
+
+          break;
+        }
+      }
+      
+    } else {
+      return '';
+    }
+    
+  } //field2var
+  
+  function set_og_img( $img ){
+    $element = array(
+      '#tag' => 'meta',
+      '#attributes' => array(
+        'property' => 'og:image',
+        'content' => $img,
+      ),
+    );
+    drupal_add_html_head($element, 'og_image');
+  }
+  
+  function set_pos( $i, $field, $label = false ){
+    $label ? $offset = 1 : $offset = 0;
+    if( $i == 1 ){
+      if( $i == count( $field['und'] ) + $offset ){
+        $pos = 'first last';
+      } else {
+        $pos = 'first';
+      }
+    } elseif( $i < count( $field['und'] ) + $offset ){
+      $pos = 'middle';
+    } else {
+      $pos = 'last';
+    }
+    
+    return $pos;
+  }
+  
+  function style_porperty( $style ){
+    $query = db_select( 'image_effects', 'ie' );
+    $query->fields( 'ie', array('data') );
+    $query->leftjoin( 'image_styles', 'isa', 'ie.isid = isa.isid' );
+    $query->condition( 'isa.name', $style, '=' );
+    $res = $query->execute()->fetchAll();
+    $current = current( $res );
+    
+    if( isset( $current ) && !empty( $current ) ){
+      $data = unserialize($current->data);
+    } else {
+      $data['width'] = '100%';
+      $data['height'] = '100%';
+    }
+    
+    if( !isset( $data['width'] ) || empty( $data['width'] ) ){
+      $data['width'] = '100%';
+    }
+
+    if ( !isset( $data['height'] ) || empty( $data['height'] ) ){
+      $data['height'] = '100%';
+    }
+
+    return $data;
+  }
+  
