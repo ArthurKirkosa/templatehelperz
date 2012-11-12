@@ -1,7 +1,7 @@
 <?php
   /*******************************************************************************************************************************
   $vars_temp = array(
-    'type' => '',             //image, images, term, text, list, ingrediente, vimeo_embed, vimeo_url
+    'type' => '',             //image, images, term, text, list, array_list, ingrediente, vimeo_embed, vimeo_url
     'field' => '',            //name of the field (field_image, field_tags, ...)
     'style' => array(
       'preset' => '',         //name of the image style (200x100, 366x133, ...)
@@ -209,6 +209,40 @@
           }
           break;
         } // case list
+
+        case 'array_list': {
+          if( !empty( $field ) ) {
+            !$no_container ? $lista = "<{$vars['container']['tag']} class='{$vars['container']['class']}'>" : $lista = '';
+            $i = 1;
+            
+            foreach( $field['und'] as $item ) {
+              $odd_even = $i%2 ? 'odd' : 'even';
+              
+              $pos = set_pos( $i, $field );
+              
+              if( $link_to ) {
+                $url = $link_to_href;
+                
+                $lista .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} $pos $odd_even'><a href='$url' target='{$vars['link_to']['target']}' rel='{$vars['link_to']['rel']}'>{$item['value']}</a></{$vars['wrapper']['tag']}>";
+              } else {
+                if( $no_wrapper ) {
+                  $lista .= $item['value'];
+                } else {
+                  $lista .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} $pos $odd_even'>{$item['value']}</{$vars['wrapper']['tag']}>";
+                }
+              }
+              
+              $i++;
+            }
+            
+            !$no_container ? $lista .= "</{$vars['container']['tag']}>" : false;
+            
+            return $lista;
+          } else {
+            return '';
+          }
+          break;
+        } // case array_list
 
         case 'ingrediente': {
           if( !empty( $field ) ) {
