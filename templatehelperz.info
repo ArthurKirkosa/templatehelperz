@@ -1,7 +1,7 @@
 name = Template Helperz
 description = Functii pentru preprocesare template-uri
 core = 7.x
-version = "7.x-1.1.1"
+version = "7.x-1.1.2"
 files[] = templatehelperz.module
 
 package = Helperz
