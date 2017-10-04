@@ -549,7 +549,7 @@
 
     function setPos($i, $field, $label = false)
     {
-        $label ? $offset = 1 : $offset = 0;
+        $offset = $label ? 1 : 0;
         $items = defaultLanguage($field);
 
         if ($i == 1) {
@@ -573,21 +573,22 @@
         $query->fields('ie', ['data']);
         $query->leftjoin('image_styles', 'isa', 'ie.isid = isa.isid');
         $query->condition('isa.name', $style, '=');
-        $res = $query->execute()->fetchAll();
-        $current = current($res);
+        $current = current(
+            $query->execute()->fetchAll()
+        );
 
-        if (isset($current) && !empty($current)) {
+        if (!empty($current)) {
             $data = unserialize($current->data);
         } else {
             $data['width'] = '100%';
             $data['height'] = '100%';
         }
 
-        if (!isset($data['width']) || empty($data['width'])) {
+        if (empty($data['width'])) {
             $data['width'] = '100%';
         }
 
-        if (!isset($data['height']) || empty($data['height'])) {
+        if (empty($data['height'])) {
             $data['height'] = '100%';
         }
 
