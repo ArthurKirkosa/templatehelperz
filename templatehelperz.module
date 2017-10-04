@@ -1,5 +1,5 @@
 <?php
-    /*************************************************************************************************
+    /***********************************************************************************************
     $vars_temp = [
         'type' => '',             // image, images, term, text, list, array_list, ingrediente, vimeo_embed, vimeo_url
         'field' => '',            // name of the field (field_image, field_tags, ...)
@@ -40,114 +40,169 @@
             'name' => 'value'     // adds custom properties to the item
         ]
     ];
-    *************************************************************************************************/
+    ***********************************************************************************************/
 
     function field2var($vars, $node)
     {
-        if (!empty($vars)) {
-            $field = $node->$vars['field'];
+        if (empty($vars)) {
+            return '';
+        }
 
-            if (empty($vars['style'])) {
-                $style = '';
-            } elseif (!empty($vars['style']['preset'])) {
-                $style = style_porperty($vars['style']['preset']);
+        $field = $node->$vars['field'];
+
+        if (empty($vars['style'])) {
+            $style = '';
+        } elseif (!empty($vars['style']['preset'])) {
+            $style = style_porperty($vars['style']['preset']);
+        } else {
+            $style = $vars['style'];
+        }
+
+        if (empty($vars['class'])) {
+            $vars['class'] = '';
+        }
+
+        if (empty($vars['container']['tag'])) {
+            $vars['container']['tag'] = 'ul';
+        }
+
+        if (empty($vars['container']['class'])) {
+            $vars['container']['class'] = 'galerie clearfix';
+        }
+
+        if (empty($vars['wrapper']['tag'])) {
+            $vars['wrapper']['tag'] = 'li';
+        }
+
+        if (empty($vars['wrapper']['class'])) {
+            $vars['wrapper']['class'] = 'item';
+        }
+
+        if (empty($vars['separator']['tag'])) {
+            $vars['separator']['tag'] = 'li';
+        }
+
+        if (empty($vars['separator']['class'])) {
+            $vars['separator']['class'] = 'separator';
+        }
+
+        if (empty($vars['separator']['value'])) {
+            $vars['separator']['value'] = '';
+        }
+
+        if (empty($vars['og'])) {
+            $vars['og'] = false;
+        }
+
+        if (!empty($vars['label'])) {
+            if (empty($vars['label']['tag'])) {
+                $vars['label']['tag'] = 'li';
+            }
+
+            if (empty($vars['label']['class'])) {
+                $vars['label']['class'] = 'label';
+            }
+
+            $label = true;
+        } else {
+            $label = false;
+        }
+
+        if (!empty($vars['link_to'])) {
+            if (!empty($vars['link_to']['href'])) {
+                $link_to_href = $vars['link_to']['href'];
             } else {
-                $style = $vars['style'];
+                $link_to_href = '';
             }
 
-            if (empty($vars['class'])) {
-                $vars['class'] = '';
-            }
-
-            if (empty($vars['container']['tag'])) {
-                $vars['container']['tag'] = 'ul';
-            }
-
-            if (empty($vars['container']['class'])) {
-                $vars['container']['class'] = 'galerie clearfix';
-            }
-
-            if (empty($vars['wrapper']['tag'])) {
-                $vars['wrapper']['tag'] = 'li';
-            }
-
-            if (empty($vars['wrapper']['class'])) {
-                $vars['wrapper']['class'] = 'item';
-            }
-
-            if (empty($vars['separator']['tag'])) {
-                $vars['separator']['tag'] = 'li';
-            }
-
-            if (empty($vars['separator']['class'])) {
-                $vars['separator']['class'] = 'separator';
-            }
-
-            if (empty($vars['separator']['value'])) {
-                $vars['separator']['value'] = '';
-            }
-
-            if (empty($vars['og'])) {
-                $vars['og'] = false;
-            }
-
-            if (!empty($vars['label'])) {
-                if (empty($vars['label']['tag'])) {
-                    $vars['label']['tag'] = 'li';
-                }
-
-                if (empty($vars['label']['class'])) {
-                    $vars['label']['class'] = 'label';
-                }
-
-                $label = true;
+            if (!empty($vars['link_to']['style'])) {
+                $link_to_style = $vars['link_to']['style'];
             } else {
-                $label = false;
+                $link_to_style = '';
             }
 
-            if (!empty($vars['link_to'])) {
-                if (!empty($vars['link_to']['href'])) {
-                    $link_to_href = $vars['link_to']['href'];
+            if (empty($vars['link_to']['target'])) {
+                $vars['link_to']['target'] = '';
+            }
+            if (empty($vars['link_to']['rel'])) {
+                $vars['link_to']['rel'] = '';
+            }
+
+            $link_to = true;
+        } else {
+            $link_to = false;
+        }
+
+        $no_container = !empty($vars['no_container']);
+        $no_wrapper = !empty($vars['no_wrapper']);
+        $properties = !empty($vars['properties']);
+
+        switch ($vars['type']) {
+            case 'image':
+                if (!empty($field)) {
+                    $items = default_language($field);
+
+                    $variables = [
+                        'style_name' => $vars['style']['preset'],
+                        'path' => $items[0]['uri'],
+                        'width' => $style['width'],
+                        'height' => $style['height'],
+                        'alt' => $items[0]['alt'],
+                        'title' => $items[0]['title'],
+                        'attributes' => [
+                          'class' => $vars['class'],
+                        ],
+                    ];
+
+                    if ($properties) {
+                        foreach ($vars['properties'] as $name => $value) {
+                            $variables['attributes'][$name] = $value;
+                        }
+                    }
+
+                    $image = theme_image_style($variables);
+
+                    if ($link_to) {
+                        $url = $link_to_style != '' ? image_style_url($link_to_style, $img["uri"]) : $link_to_href;
+                        $image = "<a href='$url' target='{$vars['link_to']['target']}' rel='{$vars['link_to']['rel']}'>$image</a>";
+                    }
+
+                    $vars['og'] ? set_og_img(image_style_url($vars['style']['preset'], $items[0]['uri'])) : false;
+
+                    return $image;
                 } else {
-                    $link_to_href = '';
+                    return '';
                 }
+            // case image
+            break;
 
-                if (!empty($vars['link_to']['style'])) {
-                    $link_to_style = $vars['link_to']['style'];
-                } else {
-                    $link_to_style = '';
-                }
+            case 'images':
+                if (!empty($field)) {
+                    $galerie = !$no_container
+                        ? "<{$vars['container']['tag']} class='{$vars['container']['class']}'>"
+                        : '';
+                    $i = 1;
 
-                if (empty($vars['link_to']['target'])) {
-                    $vars['link_to']['target'] = '';
-                }
-                if (empty($vars['link_to']['rel'])) {
-                    $vars['link_to']['rel'] = '';
-                }
+                    $items = default_language($field);
 
-                $link_to = true;
-            } else {
-                $link_to = false;
-            }
+                    foreach ($items as $img) {
+                        if (!empty($img['alt'])) {
+                            $img['alt'] = $node->title;
+                        }
 
-            $no_container = !empty($vars['no_container']);
-            $no_wrapper = !empty($vars['no_wrapper']);
-            $properties = !empty($vars['properties']);
-
-            switch ($vars['type']) {
-                case 'image':
-                    if (!empty($field)) {
-                        $items = default_language($field);
+                        if (!isset($img['title'])) {
+                            $img['title'] = '';
+                        }
 
                         $variables = [
                             'style_name' => $vars['style']['preset'],
-                            'path' => $items[0]['uri'],
+                            'path' => $img['uri'],
                             'width' => $style['width'],
                             'height' => $style['height'],
-                            'alt' => $items[0]['alt'],
-                            'title' => $items[0]['title'],
+                            'alt' => $img['alt'],
+                            'title' => $img['title'],
                             'attributes' => [
-                              'class' => $vars['class'],
+                                'class' => $vars['class'],
                             ],
                         ];
 
@@ -157,382 +212,327 @@
                             }
                         }
 
-                        $image = theme_image_style($variables);
+                        $gal_img = theme_image_style($variables);
+
+                        $odd_even = $i % 2 ? 'odd' : 'even';
+
+                        $pos = set_pos($i, $field);
 
                         if ($link_to) {
                             $url = $link_to_style != '' ? image_style_url($link_to_style, $img["uri"]) : $link_to_href;
-                            $image = "<a href='$url' target='{$vars['link_to']['target']}' rel='{$vars['link_to']['rel']}'>$image</a>";
-                        }
 
-                        $vars['og'] ? set_og_img(image_style_url($vars['style']['preset'], $items[0]['uri'])) : false;
-
-                        return $image;
-                    } else {
-                        return '';
-                    }
-                // case image
-                break;
-
-                case 'images':
-                    if (!empty($field)) {
-                        $galerie = !$no_container
-                            ? "<{$vars['container']['tag']} class='{$vars['container']['class']}'>"
-                            : '';
-                        $i = 1;
-
-                        $items = default_language($field);
-
-                        foreach ($items as $img) {
-                            if (!empty($img['alt'])) {
-                                $img['alt'] = $node->title;
-                            }
-
-                            if (!isset($img['title'])) {
-                                $img['title'] = '';
-                            }
-
-                            $variables = [
-                                'style_name' => $vars['style']['preset'],
-                                'path' => $img['uri'],
-                                'width' => $style['width'],
-                                'height' => $style['height'],
-                                'alt' => $img['alt'],
-                                'title' => $img['title'],
-                                'attributes' => [
-                                    'class' => $vars['class'],
-                                ],
-                            ];
-
-                            if ($properties) {
-                                foreach ($vars['properties'] as $name => $value) {
-                                    $variables['attributes'][$name] = $value;
-                                }
-                            }
-
-                            $gal_img = theme_image_style($variables);
-
-                            $odd_even = $i % 2 ? 'odd' : 'even';
-
-                            $pos = set_pos($i, $field);
-
-                            if ($link_to) {
-                                $url = $link_to_style != '' ? image_style_url($link_to_style, $img["uri"]) : $link_to_href;
-
-                                $galerie .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} image $pos $odd_even'><a href='$url' target='{$vars['link_to']['target']}' rel='{$vars['link_to']['rel']}'>$gal_img</a></{$vars['wrapper']['tag']}>";
-                            } else {
-                                $galerie .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} image $pos $odd_even'>$gal_img</{$vars['wrapper']['tag']}>";
-                            }
-
-                            $i++;
-                        }
-
-                        !$no_container ? $galerie .= "</{$vars['container']['tag']}>" : false;
-
-                        $vars['og'] ? set_og_img(image_style_url($vars['style']['preset'], $items[0]['uri'])) : false;
-
-                        return $galerie;
-                    } else {
-                        return '';
-                    }
-                // case images
-                break;
-
-                case 'list':
-                    if (!empty($field)) {
-                        $lista = !$no_container
-                            ? "<{$vars['container']['tag']} class='{$vars['container']['class']}'>"
-                            : '';
-                        $i = 1;
-                        $items = default_language($field);
-
-                        foreach ($items as $item) {
-                            $odd_even = $i % 2 ? 'odd' : 'even';
-
-                            $pos = set_pos($i, $field);
-
-                            if ($link_to) {
-                                $url = $link_to_href;
-
-                                $lista .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} $pos $odd_even'><a href='$url' target='{$vars['link_to']['target']}' rel='{$vars['link_to']['rel']}'>{$item->value}</a></{$vars['wrapper']['tag']}>";
-                            } else {
-                                $lista .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} $pos $odd_even'>{$item->value}</{$vars['wrapper']['tag']}>";
-                            }
-
-                            $i++;
-                        }
-
-                        !$no_container ? $lista .= "</{$vars['container']['tag']}>" : false;
-
-                        return $lista;
-                    } else {
-                        return '';
-                    }
-                // case list
-                break;
-
-                case 'array_list':
-                    if (!empty($field)) {
-                        $lista =  !$no_container
-                            ? "<{$vars['container']['tag']} class='{$vars['container']['class']}'>"
-                            : '';
-                        $i = 1;
-                        $items = default_language($field);
-
-                        foreach ($items as $item) {
-                            $odd_even = $i % 2 ? 'odd' : 'even';
-
-                            $pos = set_pos($i, $field);
-
-                            $value = field_info($vars['field'], $item['value']);
-
-                            if ($link_to) {
-                                $url = $link_to_href;
-
-                                $lista .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} $pos $odd_even'><a href='$url' target='{$vars['link_to']['target']}' rel='{$vars['link_to']['rel']}'>{$value}</a></{$vars['wrapper']['tag']}>";
-                            } else {
-                                if ($no_wrapper) {
-                                    $lista .= $value;
-                                } else {
-                                    $lista .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} $pos $odd_even'>{$value}</{$vars['wrapper']['tag']}>";
-                                }
-                            }
-
-                            $i++;
-                        }
-
-                        !$no_container ? $lista .= "</{$vars['container']['tag']}>" : false;
-
-                        return $lista;
-                    } else {
-                        return '';
-                    }
-                // case array_list
-                break;
-
-                case 'ingrediente':
-                    if (!empty($field)) {
-                        $props = '';
-
-                        if ($properties) {
-                            foreach ($vars['properties'] as $name => $value) {
-                                $props .= " $name='$value'";
-                            }
-                        }
-
-                        $lista = !$no_container
-                            ? "<{$vars['container']['tag']} class='{$vars['container']['class']}'>"
-                            : '';
-                        $i = 1;
-                        $items = default_language($field);
-                        $repl_cant = [
-                            '1/2' => '½',
-                            '3/4' => '¾',
-                            '1/4' => '¼',
-                        ];
-
-                        foreach ($items as $item) {
-                            $odd_even = $i % 2 ? 'odd' : 'even';
-
-                            $pos = set_pos($i, $field);
-
-                            $term = taxonomy_get_term_by_name($item['nume'], 'ingrediente');
-                            if ($term) {
-                                foreach ($term as $t) {
-                                    $tid = $t->tid;
-                                    $vid = $t->vid;
-                                }
-                            } else {
-                                $tid = $vid = '';
-                            }
-
-                            $item['label'] ? $is_label = 'label' : $is_label = '';
-
-                            $lista .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} ingredient $is_label clearfix $pos $odd_even'$props><{$vars['container']['tag']}>";
-
-                            foreach ($repl_cant as $key => $value) {
-                                $item['cantitate'] = str_replace(" $key ", $value, $item['cantitate']);
-                                $item['cantitate'] = str_replace("$key ", $value, $item['cantitate']);
-                                $item['cantitate'] = str_replace($key, $value, $item['cantitate']);
-                            }
-
-                            if ($is_label == 'label') {
-                                !empty($item['nume']) ? $lista .= "<{$vars['wrapper']['tag']} class='prop label'>{$item['nume']} </{$vars['wrapper']['tag']}>" : false;
-                            } else {
-                                !empty($item['cantitate']) ? $lista .= "<{$vars['wrapper']['tag']} class='prop cantitate'>{$item['cantitate']} </{$vars['wrapper']['tag']}>" : false;
-                                !empty($item['tip']) ? $lista .= "<{$vars['wrapper']['tag']} class='prop tip'>{$item['tip']} </{$vars['wrapper']['tag']}>" : false;
-                                !empty($item['nume']) ? $lista .= "<{$vars['wrapper']['tag']} class='prop nume' data-vid='$vid' data-tid='$tid'>{$item['nume']} </{$vars['wrapper']['tag']}>" : false;
-                                !empty($item['detalii']) ? $lista .= "<{$vars['wrapper']['tag']} class='prop detalii'>{$item['detalii']}</{$vars['wrapper']['tag']}>" : false;
-                            }
-
-                            $lista .= "</{$vars['container']['tag']}></{$vars['wrapper']['tag']}>";
-
-                            $i++;
-                        }
-
-                        !$no_container ? $lista .= "</{$vars['container']['tag']}>" : false;
-
-                        return $lista;
-                    } else {
-                        return '';
-                    }
-                // case ingrediente
-                break;
-
-                case 'vimeo_embed':
-                    if (!empty($field)) {
-                        !$no_container ? $galeie = "<{$vars['container']['tag']} class='{$vars['container']['class']}'>" : $galerie = '';
-                        $i = 1;
-                        $items = default_language($field);
-
-                        foreach ($items as $video) {
-                            preg_match_all('/(src)=("[^"]*")/i', $video['value'], $id[$i]);
-                            $imgid = str_replace('http://player.vimeo.com/video/', '', $id[$i][2]);
-                            $imgid = str_replace('"', '', $imgid[0]);
-
-                            $hash = unserialize(file_get_contents("http://vimeo.com/api/v2/video/$imgid.php"));
-
-                            $odd_even = $i % 2 ? 'odd' : 'even';
-
-                            $pos = set_pos($i, $field);
-
-                            $galerie .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} video $pos $odd_even'><img src='{$hash[0]['thumbnail_medium']}' width={$style['width']} height={$style['height']} alt /></{$vars['wrapper']['tag']}>";
-
-                            $i++;
-                        }
-
-                        !$no_container ? $galerie .= "</{$vars['container']['tag']}>" : false;
-
-                        return $galerie;
-                    } else {
-                        return '';
-                    }
-                // case vimeo embed
-                break;
-
-                case 'vimeo_url':
-                    if (!empty($field)) {
-                        !$no_container ? $galerie = "<{$vars['container']['tag']} class='{$vars['container']['class']}'>" : $galerie = '';
-                        $i = 1;
-                        $items = default_language($field);
-
-                        foreach ($items as $video) {
-                            $imgid = str_replace('http://vimeo.com/', '', $video['value']);
-                            $hash = unserialize(file_get_contents("http://vimeo.com/api/v2/video/$imgid.php"));
-
-                            $odd_even = $i % 2 ? 'odd' : 'even';
-
-                            $pos = set_pos($i, $field);
-
-                            $galerie .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} video $pos $odd_even'><img src='{$hash[0]['thumbnail_medium']}' width={$style['width']} height={$style['height']} alt /></{$vars['wrapper']['tag']}>";
-
-                            $i++;
-                        }
-
-                        !$no_container ? $galerie .= "</{$vars['container']['tag']}>" : false;
-
-                        return $galerie;
-                    } else {
-                        return '';
-                    }
-                // case vimeo url
-                break;
-
-                case 'term':
-                    if (!empty($field) && !empty($field[language_default('language')]['taxonomy_term']->name)) {
-                        global $base_url;
-                        $items = default_language($field);
-                        $props = "";
-                        if ($properties) {
-                            foreach ($vars['properties'] as $name => $value) {
-                                $props .= " $name='$value'";
-                            }
-                        }
-
-                        !$no_container ? $terms = "<{$vars['container']['tag']} class='{$vars['container']['class']}'>" : $terms = '';
-                        $i = 1; // counter for terms
-                    $j = 0; // counter for separators
-                    $p = 0; // main counter
-
-                    if ($label) {
-                        $p = $i + $j;
-                        $odd_even = $p%2 ? 'odd' : 'even';
-
-                        $pos = set_pos($i, $field, $label);
-
-                        if ($no_wrapper) {
-                            $terms .= "{$vars['label']['value']}";
+                            $galerie .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} image $pos $odd_even'><a href='$url' target='{$vars['link_to']['target']}' rel='{$vars['link_to']['rel']}'>$gal_img</a></{$vars['wrapper']['tag']}>";
                         } else {
-                            $terms .= "<{$vars['label']['tag']} class='{$vars['wrapper']['class']} {$vars['label']['class']} $pos $odd_even'>{$vars['label']['value']}</{$vars['label']['tag']}>";
+                            $galerie .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} image $pos $odd_even'>$gal_img</{$vars['wrapper']['tag']}>";
                         }
 
                         $i++;
                     }
 
-                        foreach ($items as $term) {
+                    !$no_container ? $galerie .= "</{$vars['container']['tag']}>" : false;
+
+                    $vars['og'] ? set_og_img(image_style_url($vars['style']['preset'], $items[0]['uri'])) : false;
+
+                    return $galerie;
+                } else {
+                    return '';
+                }
+            // case images
+            break;
+
+            case 'list':
+                if (!empty($field)) {
+                    $lista = !$no_container
+                        ? "<{$vars['container']['tag']} class='{$vars['container']['class']}'>"
+                        : '';
+                    $i = 1;
+                    $items = default_language($field);
+
+                    foreach ($items as $item) {
+                        $odd_even = $i % 2 ? 'odd' : 'even';
+
+                        $pos = set_pos($i, $field);
+
+                        if ($link_to) {
+                            $url = $link_to_href;
+
+                            $lista .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} $pos $odd_even'><a href='$url' target='{$vars['link_to']['target']}' rel='{$vars['link_to']['rel']}'>{$item->value}</a></{$vars['wrapper']['tag']}>";
+                        } else {
+                            $lista .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} $pos $odd_even'>{$item->value}</{$vars['wrapper']['tag']}>";
+                        }
+
+                        $i++;
+                    }
+
+                    !$no_container ? $lista .= "</{$vars['container']['tag']}>" : false;
+
+                    return $lista;
+                } else {
+                    return '';
+                }
+            // case list
+            break;
+
+            case 'array_list':
+                if (!empty($field)) {
+                    $lista =  !$no_container
+                        ? "<{$vars['container']['tag']} class='{$vars['container']['class']}'>"
+                        : '';
+                    $i = 1;
+                    $items = default_language($field);
+
+                    foreach ($items as $item) {
+                        $odd_even = $i % 2 ? 'odd' : 'even';
+
+                        $pos = set_pos($i, $field);
+
+                        $value = field_info($vars['field'], $item['value']);
+
+                        if ($link_to) {
+                            $url = $link_to_href;
+
+                            $lista .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} $pos $odd_even'><a href='$url' target='{$vars['link_to']['target']}' rel='{$vars['link_to']['rel']}'>{$value}</a></{$vars['wrapper']['tag']}>";
+                        } else {
+                            if ($no_wrapper) {
+                                $lista .= $value;
+                            } else {
+                                $lista .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} $pos $odd_even'>{$value}</{$vars['wrapper']['tag']}>";
+                            }
+                        }
+
+                        $i++;
+                    }
+
+                    !$no_container ? $lista .= "</{$vars['container']['tag']}>" : false;
+
+                    return $lista;
+                } else {
+                    return '';
+                }
+            // case array_list
+            break;
+
+            case 'ingrediente':
+                if (!empty($field)) {
+                    $props = '';
+
+                    if ($properties) {
+                        foreach ($vars['properties'] as $name => $value) {
+                            $props .= " $name='$value'";
+                        }
+                    }
+
+                    $lista = !$no_container
+                        ? "<{$vars['container']['tag']} class='{$vars['container']['class']}'>"
+                        : '';
+                    $i = 1;
+                    $items = default_language($field);
+                    $repl_cant = [
+                        '1/2' => '½',
+                        '3/4' => '¾',
+                        '1/4' => '¼',
+                    ];
+
+                    foreach ($items as $item) {
+                        $odd_even = $i % 2 ? 'odd' : 'even';
+
+                        $pos = set_pos($i, $field);
+
+                        $term = taxonomy_get_term_by_name($item['nume'], 'ingrediente');
+                        if ($term) {
+                            foreach ($term as $t) {
+                                $tid = $t->tid;
+                                $vid = $t->vid;
+                            }
+                        } else {
+                            $tid = $vid = '';
+                        }
+
+                        $item['label'] ? $is_label = 'label' : $is_label = '';
+
+                        $lista .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} ingredient $is_label clearfix $pos $odd_even'$props><{$vars['container']['tag']}>";
+
+                        foreach ($repl_cant as $key => $value) {
+                            $item['cantitate'] = str_replace(" $key ", $value, $item['cantitate']);
+                            $item['cantitate'] = str_replace("$key ", $value, $item['cantitate']);
+                            $item['cantitate'] = str_replace($key, $value, $item['cantitate']);
+                        }
+
+                        if ($is_label == 'label') {
+                            !empty($item['nume']) ? $lista .= "<{$vars['wrapper']['tag']} class='prop label'>{$item['nume']} </{$vars['wrapper']['tag']}>" : false;
+                        } else {
+                            !empty($item['cantitate']) ? $lista .= "<{$vars['wrapper']['tag']} class='prop cantitate'>{$item['cantitate']} </{$vars['wrapper']['tag']}>" : false;
+                            !empty($item['tip']) ? $lista .= "<{$vars['wrapper']['tag']} class='prop tip'>{$item['tip']} </{$vars['wrapper']['tag']}>" : false;
+                            !empty($item['nume']) ? $lista .= "<{$vars['wrapper']['tag']} class='prop nume' data-vid='$vid' data-tid='$tid'>{$item['nume']} </{$vars['wrapper']['tag']}>" : false;
+                            !empty($item['detalii']) ? $lista .= "<{$vars['wrapper']['tag']} class='prop detalii'>{$item['detalii']}</{$vars['wrapper']['tag']}>" : false;
+                        }
+
+                        $lista .= "</{$vars['container']['tag']}></{$vars['wrapper']['tag']}>";
+
+                        $i++;
+                    }
+
+                    !$no_container ? $lista .= "</{$vars['container']['tag']}>" : false;
+
+                    return $lista;
+                } else {
+                    return '';
+                }
+            // case ingrediente
+            break;
+
+            case 'vimeo_embed':
+                if (!empty($field)) {
+                    !$no_container ? $galeie = "<{$vars['container']['tag']} class='{$vars['container']['class']}'>" : $galerie = '';
+                    $i = 1;
+                    $items = default_language($field);
+
+                    foreach ($items as $video) {
+                        preg_match_all('/(src)=("[^"]*")/i', $video['value'], $id[$i]);
+                        $imgid = str_replace('http://player.vimeo.com/video/', '', $id[$i][2]);
+                        $imgid = str_replace('"', '', $imgid[0]);
+
+                        $hash = unserialize(file_get_contents("http://vimeo.com/api/v2/video/$imgid.php"));
+
+                        $odd_even = $i % 2 ? 'odd' : 'even';
+
+                        $pos = set_pos($i, $field);
+
+                        $galerie .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} video $pos $odd_even'><img src='{$hash[0]['thumbnail_medium']}' width={$style['width']} height={$style['height']} alt /></{$vars['wrapper']['tag']}>";
+
+                        $i++;
+                    }
+
+                    !$no_container ? $galerie .= "</{$vars['container']['tag']}>" : false;
+
+                    return $galerie;
+                } else {
+                    return '';
+                }
+            // case vimeo embed
+            break;
+
+            case 'vimeo_url':
+                if (!empty($field)) {
+                    !$no_container ? $galerie = "<{$vars['container']['tag']} class='{$vars['container']['class']}'>" : $galerie = '';
+                    $i = 1;
+                    $items = default_language($field);
+
+                    foreach ($items as $video) {
+                        $imgid = str_replace('http://vimeo.com/', '', $video['value']);
+                        $hash = unserialize(file_get_contents("http://vimeo.com/api/v2/video/$imgid.php"));
+
+                        $odd_even = $i % 2 ? 'odd' : 'even';
+
+                        $pos = set_pos($i, $field);
+
+                        $galerie .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} video $pos $odd_even'><img src='{$hash[0]['thumbnail_medium']}' width={$style['width']} height={$style['height']} alt /></{$vars['wrapper']['tag']}>";
+
+                        $i++;
+                    }
+
+                    !$no_container ? $galerie .= "</{$vars['container']['tag']}>" : false;
+
+                    return $galerie;
+                } else {
+                    return '';
+                }
+            // case vimeo url
+            break;
+
+            case 'term':
+                if (!empty($field) && !empty($field[language_default('language')]['taxonomy_term']->name)) {
+                    global $base_url;
+                    $items = default_language($field);
+                    $props = "";
+                    if ($properties) {
+                        foreach ($vars['properties'] as $name => $value) {
+                            $props .= " $name='$value'";
+                        }
+                    }
+
+                    !$no_container ? $terms = "<{$vars['container']['tag']} class='{$vars['container']['class']}'>" : $terms = '';
+                    $i = 1; // counter for terms
+                $j = 0; // counter for separators
+                $p = 0; // main counter
+
+                if ($label) {
+                    $p = $i + $j;
+                    $odd_even = $p%2 ? 'odd' : 'even';
+
+                    $pos = set_pos($i, $field, $label);
+
+                    if ($no_wrapper) {
+                        $terms .= "{$vars['label']['value']}";
+                    } else {
+                        $terms .= "<{$vars['label']['tag']} class='{$vars['wrapper']['class']} {$vars['label']['class']} $pos $odd_even'>{$vars['label']['value']}</{$vars['label']['tag']}>";
+                    }
+
+                    $i++;
+                }
+
+                    foreach ($items as $term) {
+                        $p = $i + $j;
+                        $odd_even = $p%2 ? 'odd' : 'even';
+
+                        $pos = set_pos($i, $field, $label);
+
+                        if (empty($term['taxonomy_term']->name)) {
+                            $term['taxonomy_term']->name = '';
+                        }
+
+                        if ($link_to) {
+                            if ($link_to_href == '%self%') {
+                                $url = $base_url . '/taxonomy/term/' . $term['tid'];
+                            } else {
+                                $url = $link_to_href;
+                                $vars['link_to']['target'] = $vars['link_to']['target'] != '' ? $vars['link_to']['target'] : '_blank';
+                            }
+
+                            if ($no_wrapper) {
+                                $terms .= "<a href='$url' target='{$vars['link_to']['target']}' rel='{$vars['link_to']['rel']}'$props>{$term['taxonomy_term']->name}</a>";
+                            } else {
+                                $terms .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} term $pos $odd_even'$props><a href='$url' target='{$vars['link_to']['target']}' rel='{$vars['link_to']['rel']}'>{$term['taxonomy_term']->name}</a></{$vars['wrapper']['tag']}>";
+                            }
+                        } else {
+                            if ($no_wrapper) {
+                                $terms .= "<span class='term'$props>{$term['taxonomy_term']->name}</span>";
+                            } else {
+                                $terms .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} term $pos $odd_even'$props>{$term['taxonomy_term']->name}</{$vars['wrapper']['tag']}>";
+                            }
+                        }
+
+                        if (!empty($vars['separator']) && ($pos != 'last' && $pos != 'first last')) {
+                            $j++;
                             $p = $i + $j;
                             $odd_even = $p%2 ? 'odd' : 'even';
 
-                            $pos = set_pos($i, $field, $label);
-
-                            if (empty($term['taxonomy_term']->name)) {
-                                $term['taxonomy_term']->name = '';
-                            }
-
-                            if ($link_to) {
-                                if ($link_to_href == '%self%') {
-                                    $url = $base_url . '/taxonomy/term/' . $term['tid'];
-                                } else {
-                                    $url = $link_to_href;
-                                    $vars['link_to']['target'] = $vars['link_to']['target'] != '' ? $vars['link_to']['target'] : '_blank';
-                                }
-
-                                if ($no_wrapper) {
-                                    $terms .= "<a href='$url' target='{$vars['link_to']['target']}' rel='{$vars['link_to']['rel']}'$props>{$term['taxonomy_term']->name}</a>";
-                                } else {
-                                    $terms .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} term $pos $odd_even'$props><a href='$url' target='{$vars['link_to']['target']}' rel='{$vars['link_to']['rel']}'>{$term['taxonomy_term']->name}</a></{$vars['wrapper']['tag']}>";
-                                }
-                            } else {
-                                if ($no_wrapper) {
-                                    $terms .= "<span class='term'$props>{$term['taxonomy_term']->name}</span>";
-                                } else {
-                                    $terms .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} term $pos $odd_even'$props>{$term['taxonomy_term']->name}</{$vars['wrapper']['tag']}>";
-                                }
-                            }
-
-                            if (!empty($vars['separator']) && ($pos != 'last' && $pos != 'first last')) {
-                                $j++;
-                                $p = $i + $j;
-                                $odd_even = $p%2 ? 'odd' : 'even';
-
-                                $terms .= "<{$vars['separator']['tag']} class='{$vars['wrapper']['class']} {$vars['separator']['class']} $odd_even'>{$vars['separator']['value']}</{$vars['separator']['tag']}>";
-                            }
-
-                            $i++;
+                            $terms .= "<{$vars['separator']['tag']} class='{$vars['wrapper']['class']} {$vars['separator']['class']} $odd_even'>{$vars['separator']['value']}</{$vars['separator']['tag']}>";
                         }
 
-                        !$no_container ? $terms .= "</{$vars['container']['tag']}>" : false;
-                        return $terms;
-                    } else {
-                        return '';
+                        $i++;
                     }
-                // case term
-                break;
 
-                case 'text':
-                    if (!empty($field)) {
-                        $items = default_language($field);
-                        $text = $items['0']['value'];
+                    !$no_container ? $terms .= "</{$vars['container']['tag']}>" : false;
+                    return $terms;
+                } else {
+                    return '';
+                }
+            // case term
+            break;
 
-                        return $text;
-                    } else {
-                        return '';
-                    }
-                break;
+            case 'text':
+                if (!empty($field)) {
+                    $items = default_language($field);
+                    $text = $items['0']['value'];
 
-            } // swtich
-        } else {
-            return '';
-        }
+                    return $text;
+                } else {
+                    return '';
+                }
+            break;
+
+        } // swtich
     } // field2var
 
     function set_og_img($img)
