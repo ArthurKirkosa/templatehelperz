@@ -1,4 +1,4 @@
-#Drupal - Module: templatehelperz
+#Drupal 7 - Module: templatehelperz
 
 ##Usage:
 
