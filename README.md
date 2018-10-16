@@ -3,11 +3,11 @@
 ## Usage:
 
 <pre>
-$template_var = field2var($vars_temp, $node);
+$templateVar = field2var($vars, $node);
 </pre>
 
 <pre>
-$vars_temp = [
+$vars = [
     'type' => '',             // image, images, term, text, list, array_list, ingrediente, vimeo_embed, vimeo_url
     'field' => '',            // name of the field (field_image, field_tags, ...)
     'style' => [
