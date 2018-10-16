@@ -9,9 +9,9 @@ $templateVar = field2var($vars, $node);
 <pre>
 $vars = [
     'type' => '',             // image, images, term, text, list, array_list, ingrediente, vimeo_embed, vimeo_url
-    'field' => '',            // name of the field (field_image, field_tags, ...)
+    'field' => '',            // name of the field (field_image, field_tags...)
     'style' => [
-        'preset' => '',       // name of the image style (200x100, 366x133, ...)
+        'preset' => '',       // name of the image style (200x100, 366x133...)
         'width' => '',        // width
         'height' => '',       // height
     ],
@@ -31,7 +31,7 @@ $vars = [
         'href' => '',         // link tag for each element to link to a specified url (include http://)
         'rel' => '',          // rel attribute for the link tag
         'target' => '',       // target attribute for the link tag
-        'style' => '',        // link tag for each element to link to a specified image preset style (200x100, 366x133, full, ...)
+        'style' => '',        // link tag for each element to link to a specified image preset style (200x100, 366x133, full...)
     ],
     'separator' => [
         'value' => '',        // separator char for terms (default: none)
