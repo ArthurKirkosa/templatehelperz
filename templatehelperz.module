@@ -260,9 +260,9 @@
                     if ($link_to) {
                         $url = $link_to_href;
 
-                        $lista .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} $pos $odd_even'><a href='$url' target='{$vars['link_to']['target']}' rel='{$vars['link_to']['rel']}'>{$item->value}</a></{$vars['wrapper']['tag']}>";
+                        $lista .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} {$pos} {$odd_even}'><a href='{$url}' target='{$vars['link_to']['target']}' rel='{$vars['link_to']['rel']}'>{$item->value}</a></{$vars['wrapper']['tag']}>";
                     } else {
-                        $lista .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} $pos $odd_even'>{$item->value}</{$vars['wrapper']['tag']}>";
+                        $lista .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} {$pos} {$odd_even}'>{$item->value}</{$vars['wrapper']['tag']}>";
                     }
 
                     $i++;
