@@ -154,7 +154,7 @@
                     'alt' => $items[0]['alt'],
                     'title' => $items[0]['title'],
                     'attributes' => [
-                      'class' => $vars['class'],
+                        'class' => $vars['class'],
                     ],
                 ];
 
@@ -168,7 +168,7 @@
 
                 if ($link_to) {
                     $url = $link_to_style != '' ? image_style_url($link_to_style, $img['uri']) : $link_to_href;
-                    $image = "<a href='$url' target='{$vars['link_to']['target']}' rel='{$vars['link_to']['rel']}'>$image</a>";
+                    $image = "<a href='{$url}' target='{$vars['link_to']['target']}' rel='{$vars['link_to']['rel']}'>{$image}</a>";
                 }
 
                 $vars['og'] ? setOgImg(image_style_url($vars['style']['preset'], $items[0]['uri'])) : false;
