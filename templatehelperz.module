@@ -1,4 +1,5 @@
 <?php
+
     /***********************************************************************************************
     $vars_temp = [
         'type' => '',             // image, images, term, text, list, array_list, ingrediente, vimeo_embed, vimeo_url
@@ -166,7 +167,7 @@
                 $image = theme_image_style($variables);
 
                 if ($link_to) {
-                    $url = $link_to_style != '' ? image_style_url($link_to_style, $img["uri"]) : $link_to_href;
+                    $url = $link_to_style != '' ? image_style_url($link_to_style, $img['uri']) : $link_to_href;
                     $image = "<a href='$url' target='{$vars['link_to']['target']}' rel='{$vars['link_to']['rel']}'>$image</a>";
                 }
 
@@ -222,7 +223,7 @@
                     $pos = setPos($i, $field);
 
                     if ($link_to) {
-                        $url = $link_to_style != '' ? image_style_url($link_to_style, $img["uri"]) : $link_to_href;
+                        $url = $link_to_style != '' ? image_style_url($link_to_style, $img['uri']) : $link_to_href;
 
                         $galerie .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} image $pos $odd_even'><a href='$url' target='{$vars['link_to']['target']}' rel='{$vars['link_to']['rel']}'>$gal_img</a></{$vars['wrapper']['tag']}>";
                     } else {
@@ -447,7 +448,7 @@
 
                 global $base_url;
                 $items = defaultLanguage($field);
-                $props = "";
+                $props = '';
                 if ($properties) {
                     foreach ($vars['properties'] as $name => $value) {
                         $props .= " $name='$value'";
@@ -517,6 +518,7 @@
                 }
 
                 !$noContainer ? $terms .= "</{$vars['container']['tag']}>" : false;
+
                 return $terms;
             // case term
             break;
