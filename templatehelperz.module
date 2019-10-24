@@ -225,9 +225,9 @@
                     if ($link_to) {
                         $url = $link_to_style != '' ? image_style_url($link_to_style, $img['uri']) : $link_to_href;
 
-                        $galerie .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} image $pos $odd_even'><a href='$url' target='{$vars['link_to']['target']}' rel='{$vars['link_to']['rel']}'>$gal_img</a></{$vars['wrapper']['tag']}>";
+                        $galerie .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} image {$pos} {$odd_even}'><a href='{$url}' target='{$vars['link_to']['target']}' rel='{$vars['link_to']['rel']}'>{$gal_img}</a></{$vars['wrapper']['tag']}>";
                     } else {
-                        $galerie .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} image $pos $odd_even'>$gal_img</{$vars['wrapper']['tag']}>";
+                        $galerie .= "<{$vars['wrapper']['tag']} class='{$vars['wrapper']['class']} image {$pos} {$odd_even}'>{$gal_img}</{$vars['wrapper']['tag']}>";
                     }
 
                     $i++;
